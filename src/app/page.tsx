@@ -1,103 +1,103 @@
+'use client';
+import React, { useState } from "react";
 import Image from "next/image";
+import { Box, Grid, Typography, TextField, Button } from "@mui/material";
+import { OpenAI } from "openai";
+
+const client = new OpenAI({
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true
+});
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [input, setInput] = useState<string>("");
+  const [username, setUsername] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const createUsername = async (input: string) => {
+    setLoading(true);
+    try {
+      const response = await client.responses.create({
+        model: "gpt-4.1",
+        input: input,
+      });
+      console.log("Response:", response);
+      const result = response.output_text.split("**").filter(name => name.trim() !== "");
+      console.log("Result:", result);
+      setUsername(result[1]);
+    } catch (error) {
+      console.error("OpenAI Error:", error);
+      setUsername("Error generating username");
+    } finally {
+      setLoading(false);
+    }
+    console.log("Generated username:", username);
+    return username;
+  }
+
+  // const generateUsername = async () => {
+  //   if (!input) return;
+  //   setLoading(true);
+  //   try {
+  //     const response = await openai.createChatCompletion({
+  //       model: "gpt-3.5-turbo", // or "gpt-4" if available
+  //       messages: [
+  //         {
+  //           role: "user",
+  //           content: `Generate a cool and unique username based on this input: "${input}"`,
+  //         },
+  //       ],
+  //     });
+
+  //     const result = response.data.choices[0].message.content.trim();
+  //     setUsername(result);
+  //   } catch (error) {
+  //     console.error("OpenAI Error:", error);
+  //     setUsername("Error generating username");
+  //   }
+  //   setLoading(false);
+  // };
+
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f0f0f0',
+        margin: '20px',
+        padding: '10px',
+        boxSizing: 'border-box',
+        borderRadius: '8px',
+        boxShadow: '0 4px 8px 1px rgba(0, 255, 21, 0.54)',
+        color: 'black',
+      }}>
+      <Typography variant="h1" component="h1" gutterBottom>
+        Username Generator
+      </Typography>
+      <TextField
+        label="Enter your name"
+        variant="outlined"
+        id="username-input"
+        sx={{ marginBottom: '20px', width: '300px' }}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+      />
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => createUsername(input)}
+        disabled={loading}
+        sx={{ marginTop: '20px' }}
+      >
+        Generate
+      </Button>
+      <Typography variant="h5" component="h2" sx={{ marginTop: '20px' }}>
+        {loading ? "Generating..." : username ? `Generated Username: \n ${username}` : ""}
+      </Typography>
+    </Box>
   );
 }
